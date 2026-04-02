@@ -376,9 +376,9 @@ Buddy supports two provider modes:
 
 | Model | Notes |
 |:------|:------|
-| `gemini-2.5-flash-lite` | **Default.** Ultra-fast, ideal for real-time text tasks |
-| `gemini-2.0-flash` | Balanced performance with strong reasoning |
-| `gemini-2.5-flash` | More capable, slightly slower |
+| `gemini-2.5-flash-lite` | **Default.** 
+| `gemini-3-flash-preview` | 
+| `gemini-3.1-flash-light-preview` |
 
 Get your free API key at [Google AI Studio →](https://aistudio.google.com/app/apikey)
 
