@@ -54,12 +54,37 @@ class CommandManager(context: Context) {
             newArr.put(newObj)
         }
         prefs.edit().putString("custom_commands", newArr.toString()).apply()
+
+        val overStr = prefs.getString("builtin_overrides", "{}") ?: "{}"
+        val overrides = JSONObject(overStr)
+        val keys = overrides.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            val obj = overrides.getJSONObject(key)
+            val oldObjTrigger = obj.optString("trigger", "")
+            if (oldObjTrigger.startsWith(oldPrefix)) {
+                obj.put("trigger", newPrefix + oldObjTrigger.removePrefix(oldPrefix))
+            }
+        }
+        prefs.edit().putString("builtin_overrides", overrides.toString()).apply()
+
         return true
     }
 
     private fun getBuiltInCommands(): List<Command> {
         val prefix = getTriggerPrefix()
-        return builtInDefinitions.map { (name, prompt) -> Command("$prefix$name", prompt, true) }
+        val overrideStr = prefs.getString("builtin_overrides", "{}") ?: "{}"
+        val overrides = JSONObject(overrideStr)
+        return builtInDefinitions.map { (name, prompt) ->
+            if (overrides.has(name)) {
+                val overrideObj = overrides.getJSONObject(name)
+                val newTrigger = overrideObj.optString("trigger", "$prefix$name")
+                val newPrompt = overrideObj.optString("prompt", prompt)
+                Command(newTrigger, newPrompt, true)
+            } else {
+                Command("$prefix$name", prompt, true)
+            }
+        }
     }
 
     fun getCommands(): List<Command> {
@@ -113,5 +138,43 @@ class CommandManager(context: Context) {
             }
         }
         return null
+    }
+
+    fun updateCommand(oldTrigger: String, newCommand: Command) {
+        val builtInList = getBuiltInCommands()
+        val builtInTarget = builtInList.find { it.trigger == oldTrigger && it.isBuiltIn }
+        
+        if (builtInTarget != null) {
+            val prefix = getTriggerPrefix()
+            val overrideStr = prefs.getString("builtin_overrides", "{}") ?: "{}"
+            val overrides = JSONObject(overrideStr)
+            
+            var originalName: String? = null
+            for ((name, _ ) in builtInDefinitions) {
+                var currentTrigger = "$prefix$name"
+                if (overrides.has(name)) {
+                    currentTrigger = overrides.getJSONObject(name).optString("trigger", "$prefix$name")
+                }
+                if (currentTrigger == oldTrigger) {
+                    originalName = name
+                    break
+                }
+            }
+            
+            if (originalName != null) {
+                val newOverride = JSONObject()
+                newOverride.put("trigger", newCommand.trigger)
+                newOverride.put("prompt", newCommand.prompt)
+                overrides.put(originalName, newOverride)
+                prefs.edit().putString("builtin_overrides", overrides.toString()).apply()
+            }
+        } else {
+            removeCustomCommand(oldTrigger)
+            addCustomCommand(newCommand)
+        }
+    }
+
+    fun resetBuiltInCommands() {
+        prefs.edit().remove("builtin_overrides").apply()
     }
 }

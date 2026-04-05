@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ fun CommandsScreen() {
     var trigger by remember { mutableStateOf("") }
     var prompt by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var editingCommandTrigger by remember { mutableStateOf<String?>(null) }
     val prefix = commandManager.getTriggerPrefix()
 
     Column(
@@ -41,7 +44,7 @@ fun CommandsScreen() {
 
         SlateCard {
             Text(
-                text = "Add Custom Command",
+                text = if (editingCommandTrigger != null) "Edit Command" else "Add Custom Command",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onSurface
@@ -85,6 +88,17 @@ fun CommandsScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
+                if (editingCommandTrigger != null) {
+                    OutlinedButton(onClick = {
+                        editingCommandTrigger = null
+                        trigger = ""
+                        prompt = ""
+                        errorMessage = null
+                    }) {
+                        Text("Cancel")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Button(
                     onClick = {
                         val trimmedTrigger = trigger.trim()
@@ -93,27 +107,44 @@ fun CommandsScreen() {
                                 errorMessage = "Trigger must start with '$prefix'"
                                 return@Button
                             }
-                            if (commands.any { it.trigger == trimmedTrigger }) {
+                            if (commands.any { it.trigger == trimmedTrigger && it.trigger != editingCommandTrigger }) {
                                 errorMessage = "A command with this trigger already exists"
                                 return@Button
                             }
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             val newCommand = Command(trimmedTrigger, prompt.trim(), false)
-                            commandManager.addCustomCommand(newCommand)
+                            if (editingCommandTrigger != null) {
+                                commandManager.updateCommand(editingCommandTrigger!!, newCommand)
+                            } else {
+                                commandManager.addCustomCommand(newCommand)
+                            }
                             commands = commandManager.getCommands()
                             trigger = ""
                             prompt = ""
                             errorMessage = null
+                            editingCommandTrigger = null
                         }
                     },
                     enabled = trigger.isNotBlank() && prompt.isNotBlank()
                 ) {
-                    Text("Add Command")
+                    Text(if (editingCommandTrigger != null) "Save Command" else "Add Command")
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            TextButton(onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                commandManager.resetBuiltInCommands()
+                commands = commandManager.getCommands()
+            }) {
+                Icon(Icons.Default.Restore, contentDescription = "Reset Built-ins")
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Reset Defaults")
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -148,17 +179,34 @@ fun CommandsScreen() {
                                 )
                             }
                         }
-                        if (!cmd.isBuiltIn) {
-                            IconButton(onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                commandManager.removeCustomCommand(cmd.trigger)
-                                commands = commandManager.getCommands()
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete Command",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
+                        Row {
+                            if (!(cmd.isBuiltIn && cmd.trigger.endsWith("undo"))) {
+                                IconButton(onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    trigger = cmd.trigger
+                                    prompt = cmd.prompt
+                                    editingCommandTrigger = cmd.trigger
+                                    errorMessage = null
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit Command",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            if (!cmd.isBuiltIn) {
+                                IconButton(onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    commandManager.removeCustomCommand(cmd.trigger)
+                                    commands = commandManager.getCommands()
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete Command",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
                         }
                     }
