@@ -140,7 +140,8 @@ sequenceDiagram
 ### ✨ What's New in v1.1
 - **History Tab:** Keep track of every AI generation and text replacement locally. Easily copy, review, or clear your past outputs directly from the new bottom navigation bar.
 - **Static Text Replacers:** Create custom commands that instantly expand to normal static text (e.g. typing `/address` to output your home address) completely bypassing the AI for zero delays!
-- **In-App Updater:** The Dashboard now verifies your active APK version dynamically against the latest GitHub releases, alerting you seamlessly with direct download buttons.
+- **In-App Updater:** The Dashboard now shows a compact GitHub button in the top-right corner — tap to star the repo when up to date, or get a direct link to the latest release when an update is available.
+- **Banking App Quick-Toggle:** A new informational card on the Dashboard clearly explains that banking apps block Accessibility Services. A one-tap **"Turn Off"** button takes you directly to the Accessibility Settings to disable Buddy before opening sensitive apps.
 - **Enhanced UI:** Added explicit numbered indexing for your encrypted API Keys, plus completely interactive redirect links seamlessly letting you generate Gemini and OpenAI keys directly from the browser.
 - **Strict Language Preservation:** Completely eradicated auto-translation side-effects. You can seamlessly type casually in Hinglish (or any specific alphabet) and the AI will critically preserve your alphabet structure returning strict Hinglish rather than breaking into Devanagari.
 
@@ -601,9 +602,10 @@ Aggressive OEM battery management may kill the Accessibility Service in the back
 ### General Notes
 
 - Buddy requires an **active internet connection** to make AI API calls (unless using a local model via Ollama/LM Studio)
-- The `?undo` command only reverts **one level** (the most recent replacement)
+- The `/undo` command only reverts **one level** (the most recent replacement)
 - Very long texts may occasionally hit AI provider **token limits** — use `/shorten` on the result if needed
 - Accessibility Services must be **re-enabled** after app updates on some devices
+- **Banking & finance apps** (e.g. PhonePe, HDFC, SBI, Paytm) actively block apps that run Accessibility Services as an OS-level security measure. Buddy cannot bypass this. Use the **"Turn Off Buddy"** quick-toggle on the Dashboard to disable the service in one tap before opening sensitive apps, then re-enable it when done.
 
 ---
 

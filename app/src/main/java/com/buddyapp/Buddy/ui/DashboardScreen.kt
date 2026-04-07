@@ -8,11 +8,16 @@ import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.SystemUpdateAlt
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -110,9 +115,65 @@ fun DashboardScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
-        ScreenTitle("Dashboard")
+        // Top row: title + GitHub/update icon button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ScreenTitle("Dashboard")
+            latestVersion?.let { latest ->
+                val isLatest = versionName == latest || versionName >= latest
+                TextButton(
+                    onClick = {
+                        if (isLatest) {
+                            uriHandler.openUri("https://github.com/Deepender25/Buddy")
+                        } else {
+                            uriHandler.openUri("https://github.com/Deepender25/Buddy/releases/latest")
+                        }
+                    },
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp)
+                ) {
+                    if (isLatest) {
+                        Icon(
+                            imageVector = Icons.Outlined.Star,
+                            contentDescription = "Star on GitHub",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Star",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        BadgedBox(
+                            badge = {
+                                Badge(containerColor = MaterialTheme.colorScheme.primary)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.SystemUpdateAlt,
+                                contentDescription = "Update Available",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Update",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
 
         if (!isServiceEnabled) {
             Surface(
@@ -227,6 +288,56 @@ fun DashboardScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Banking App Warning Card
+        if (isServiceEnabled) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Shield,
+                        contentDescription = "Banking",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Using a banking app?",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Turn off Buddy first — banking apps block Accessibility Services.",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 17.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        },
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Text("Turn Off", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         SlateCard {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -270,36 +381,6 @@ fun DashboardScreen() {
             }
         }
         
-        Spacer(modifier = Modifier.weight(1f))
-        
-        latestVersion?.let { latest ->
-            val isLatest = versionName == latest || versionName >= latest
-            SlateCard {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = if (isLatest) "You're up to date! (v$versionName)" else "Update Available! (v$latest)",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = if (isLatest) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            if (isLatest) {
-                                uriHandler.openUri("https://github.com/Deepender25/Buddy")
-                            } else {
-                                apkDownloadUrl?.let { uriHandler.openUri(it) } ?: uriHandler.openUri("https://github.com/Deepender25/Buddy/releases/latest")
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isLatest) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Text(if (isLatest) "Star on GitHub ★" else "Download Latest Version")
-                    }
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
