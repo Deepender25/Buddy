@@ -22,6 +22,8 @@ import com.buddyapp.Buddy.manager.KeyManager
 import com.buddyapp.Buddy.ui.components.ScreenTitle
 import com.buddyapp.Buddy.ui.components.SlateCard
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.foundation.lazy.itemsIndexed
 
 @Composable
 fun KeysScreen() {
@@ -36,6 +38,7 @@ fun KeysScreen() {
     val prefs = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
     val providerType = remember { prefs.getString("provider_type", "gemini") ?: "gemini" }
     val customEndpoint = remember { prefs.getString("custom_endpoint", "") ?: "" }
+    val uriHandler = LocalUriHandler.current
 
     Column(
         modifier = Modifier
@@ -129,27 +132,35 @@ fun KeysScreen() {
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
-            Text(
-                text = "Visit Google AI Studio (aistudio.google.com/app/apikey) and click 'Create API Key'.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            TextButton(
+                onClick = { uriHandler.openUri("https://aistudio.google.com/app/apikey") },
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    text = "Get Gemini API Key ↗",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "OpenAI",
+                text = "OpenAI & OpenAI-Compatible",
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
-            Text(
-                text = "Log in to the Developer Platform (platform.openai.com/api-keys) and generate a new secret key.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
-                lineHeight = 20.sp
-            )
+            TextButton(
+                onClick = { uriHandler.openUri("https://platform.openai.com/api-keys") },
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    text = "Get OpenAI API Key ↗",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -158,7 +169,7 @@ fun KeysScreen() {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            items(keys) { key ->
+            itemsIndexed(keys) { index, key ->
                 SlateCard {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -166,6 +177,12 @@ fun KeysScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Key ${index + 1}",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "••••••••" + key.takeLast(6),
                                 fontWeight = FontWeight.Bold,

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,7 +32,12 @@ import com.buddyapp.Buddy.manager.CommandManager
 import com.buddyapp.Buddy.manager.KeyManager
 import com.buddyapp.Buddy.ui.components.ScreenTitle
 import com.buddyapp.Buddy.ui.components.SlateCard
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 private fun checkServiceEnabled(context: Context): Boolean {
     val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -50,6 +56,14 @@ fun DashboardScreen() {
     var isServiceEnabled by remember { mutableStateOf(checkServiceEnabled(context)) }
     var keyCount by remember { mutableIntStateOf(keyManager.getKeys().size) }
     var currentPrefix by remember { mutableStateOf(commandManager.getTriggerPrefix()) }
+    var latestVersion by remember { mutableStateOf<String?>(null) }
+    var apkDownloadUrl by remember { mutableStateOf<String?>(null) }
+    val versionName = remember { 
+        try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
+        } catch (e: Exception) { "1.0.0" }
+    }
+    val uriHandler = LocalUriHandler.current
 
     // Use the Activity lifecycle so polling only restarts when the app returns
     // from the background, not when switching between navbar tabs.
@@ -57,6 +71,32 @@ fun DashboardScreen() {
 
     LaunchedEffect(activityLifecycle) {
         val lifecycle = activityLifecycle ?: return@LaunchedEffect
+        
+        launch(Dispatchers.IO) {
+            try {
+                val url = URL("https://api.github.com/repos/Deepender25/Buddy/releases/latest")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
+                if (connection.responseCode == 200) {
+                    val response = connection.inputStream.bufferedReader().readText()
+                    val json = JSONObject(response)
+                    val tagName = json.getString("tag_name").removePrefix("v")
+                    latestVersion = tagName
+                    val assets = json.getJSONArray("assets")
+                    for (i in 0 until assets.length()) {
+                        val asset = assets.getJSONObject(i)
+                        if (asset.getString("name").endsWith(".apk")) {
+                            apkDownloadUrl = asset.getString("browser_download_url")
+                            break
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Ignore network errors gracefully
+            }
+        }
+        
         lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
                 isServiceEnabled = checkServiceEnabled(context)
@@ -226,6 +266,38 @@ fun DashboardScreen() {
                         fontSize = 15.sp,
                         lineHeight = 20.sp
                     )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        latestVersion?.let { latest ->
+            val isLatest = versionName == latest || versionName >= latest
+            SlateCard {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = if (isLatest) "You're up to date! (v$versionName)" else "Update Available! (v$latest)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = if (isLatest) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = {
+                            if (isLatest) {
+                                uriHandler.openUri("https://github.com/Deepender25/Buddy")
+                            } else {
+                                apkDownloadUrl?.let { uriHandler.openUri(it) } ?: uriHandler.openUri("https://github.com/Deepender25/Buddy/releases/latest")
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isLatest) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(if (isLatest) "Star on GitHub ★" else "Download Latest Version")
+                    }
                 }
             }
         }

@@ -185,7 +185,7 @@ fun SettingsScreen() {
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Base URL of the OpenAI-compatible API",
+                    text = "Base API URL for standard REST connections",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -227,7 +227,7 @@ fun SettingsScreen() {
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Model identifier from your provider",
+                    text = "Specify the exact model identifier given by your provider",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -262,7 +262,7 @@ fun SettingsScreen() {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Trigger Prefix",
+                    text = "Command Activation Symbol",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurface
@@ -270,7 +270,7 @@ fun SettingsScreen() {
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Symbol used before command names (e.g., ${triggerPrefix}fix). Must be a single non-alphanumeric character.",
+                text = "Type this symbol before a command word to trigger Buddy (e.g., ${triggerPrefix}fix). Must be a single special character.",
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
