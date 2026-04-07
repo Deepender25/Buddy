@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import com.buddyapp.Buddy.manager.CommandManager
 import com.buddyapp.Buddy.model.Command
 import com.buddyapp.Buddy.ui.components.ScreenTitle
@@ -192,7 +193,9 @@ fun CommandsScreen() {
                             Text(
                                 text = cmd.prompt,
                                 fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                             if (cmd.isBuiltIn) {
                                 Spacer(modifier = Modifier.height(4.dp))

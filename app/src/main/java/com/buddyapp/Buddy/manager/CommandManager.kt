@@ -13,19 +13,18 @@ class CommandManager(context: Context) {
     companion object {
         const val DEFAULT_PREFIX = "/"
         const val PREF_TRIGGER_PREFIX = "trigger_prefix"
-        const val SCRIPT_PRESERVATION_PROMPT = "CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language."
     }
 
     // Built-in command names (without prefix) and their prompts
     private val builtInDefinitions = listOf(
-        "fix" to "Fix grammar, spelling, and punctuation errors. \$SCRIPT_PRESERVATION_PROMPT Return only the corrected text.",
-        "improve" to "Improve clarity and readability. \$SCRIPT_PRESERVATION_PROMPT Return only the improved text.",
-        "shorten" to "Shorten while preserving core meaning. \$SCRIPT_PRESERVATION_PROMPT Return only the shortened text.",
-        "expand" to "Expand with more detail and context. \$SCRIPT_PRESERVATION_PROMPT Return only the expanded text.",
-        "formal" to "Rewrite in a formal, professional tone. \$SCRIPT_PRESERVATION_PROMPT Return only the rewritten text.",
-        "casual" to "Rewrite in a casual, friendly tone. \$SCRIPT_PRESERVATION_PROMPT Return only the rewritten text.",
-        "emoji" to "Add relevant emojis throughout. \$SCRIPT_PRESERVATION_PROMPT Return only the text with emojis added.",
-        "reply" to "Generate a contextual reply to this message. \$SCRIPT_PRESERVATION_PROMPT Return only the reply.",
+        "fix" to "Fix grammar, spelling, and punctuation errors. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the corrected text.",
+        "improve" to "Improve clarity and readability. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the improved text.",
+        "shorten" to "Shorten while preserving core meaning. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the shortened text.",
+        "expand" to "Expand with more detail and context. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the expanded text.",
+        "formal" to "Rewrite in a formal, professional tone. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the rewritten text.",
+        "casual" to "Rewrite in a casual, friendly tone. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the rewritten text.",
+        "emoji" to "Add relevant emojis throughout. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the text with emojis added.",
+        "reply" to "Generate a contextual reply to this message. CRITICAL: You MUST preserve the exact original language, alphabet, and script. For example, if the input is in Hinglish (Hindi written in Latin alphabet), you MUST output in Hinglish. Do NOT translate to Devanagari or any other script. Do not change the original language. Return only the reply.",
         "undo" to "Undo the last replacement and restore the original text."
     )
 
