@@ -20,7 +20,7 @@ A native Android Accessibility Service that injects AI directly into *any* text 
 
 <br/>
 
-[![Latest Release](https://img.shields.io/badge/Release-v1.0-blueviolet?style=flat-square)](#download)
+[![Latest Release](https://img.shields.io/badge/Release-v1.1-blueviolet?style=flat-square)](#download)
 [![APK Size](https://img.shields.io/badge/APK_Size-~20.4_MB-informational?style=flat-square)](#apk-info)
 [![Min SDK](https://img.shields.io/badge/Min_SDK-API_23-orange?style=flat-square)](#tech-stack)
 [![Target SDK](https://img.shields.io/badge/Target_SDK-API_35-brightgreen?style=flat-square)](#tech-stack)
@@ -131,11 +131,19 @@ sequenceDiagram
 
 | Property | Value |
 |:---|:---|
-| **Version** | v1.0 |
+| **Version** | v1.1 |
 | **APK Size** | ~20.4 MB (20,883 KB) |
 | **Architecture** | arm64-v8a |
 | **Min Android** | Android 6.0 (API 23) |
 | **Target Android** | Android 15 (API 35) |
+
+### ✨ What's New in v1.1
+- **History Tab:** Keep track of every AI generation and text replacement locally. Easily copy, review, or clear your past outputs directly from the new bottom navigation bar.
+- **Static Text Replacers:** Create custom commands that instantly expand to normal static text (e.g. typing `/address` to output your home address) completely bypassing the AI for zero delays!
+- **In-App Updater:** The Dashboard now verifies your active APK version dynamically against the latest GitHub releases, alerting you seamlessly with direct download buttons.
+- **Enhanced UI:** Added explicit numbered indexing for your encrypted API Keys, plus completely interactive redirect links seamlessly letting you generate Gemini and OpenAI keys directly from the browser.
+- **Model Upgrades:** Native support for the newest Google `gemma-4` architecture models has been seamlessly integrated into settings.
+- **Strict Language Preservation:** Completely eradicated auto-translation side-effects. You can seamlessly type casually in Hinglish (or any specific alphabet) and the AI will critically preserve your alphabet structure returning strict Hinglish rather than breaking into Devanagari.
 
 > ℹ️ **Why ~20 MB?** Buddy bundles the full **Python 3.12 interpreter** via [Chaquopy](https://chaquo.com/chaquopy/) to handle AI API calls natively inside the APK — no Termux, no server, no extra installs needed.
 
