@@ -26,6 +26,7 @@ import com.buddyapp.Buddy.ui.CommandsScreen
 import com.buddyapp.Buddy.ui.DashboardScreen
 import com.buddyapp.Buddy.ui.HistoryScreen
 import com.buddyapp.Buddy.ui.KeysScreen
+import com.buddyapp.Buddy.ui.ApiUsageScreen
 import com.buddyapp.Buddy.ui.SettingsScreen
 import com.buddyapp.Buddy.ui.theme.BuddyTheme
 
@@ -95,7 +96,11 @@ fun BuddyMainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Dashboard.route) { DashboardScreen() }
-            composable(Screen.Keys.route) { KeysScreen() }
+            composable(Screen.Keys.route) { KeysScreen(navController = navController) }
+            composable("api_usage/{keyIndex}") { backStackEntry ->
+                val keyIndex = backStackEntry.arguments?.getString("keyIndex")?.toIntOrNull() ?: 0
+                ApiUsageScreen(navController = navController, keyIndex = keyIndex)
+            }
             composable(Screen.Commands.route) { CommandsScreen() }
             composable(Screen.History.route) { HistoryScreen() }
             composable(Screen.Settings.route) { SettingsScreen() }

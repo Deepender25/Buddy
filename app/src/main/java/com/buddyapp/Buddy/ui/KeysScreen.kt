@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.DataUsage
+import androidx.navigation.NavController
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,12 +26,14 @@ import com.buddyapp.Buddy.ui.components.SlateCard
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.foundation.lazy.itemsIndexed
+import com.buddyapp.Buddy.manager.UsageManager
 
 @Composable
-fun KeysScreen() {
+fun KeysScreen(navController: NavController? = null) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val keyManager = remember { KeyManager(context) }
+    val usageManager = remember { UsageManager(context) }
     var keys by remember { mutableStateOf(keyManager.getKeys()) }
     var newKey by remember { mutableStateOf("") }
     var isTesting by remember { mutableStateOf(false) }
@@ -177,8 +181,14 @@ fun KeysScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
+                            val providerName = when {
+                                key.startsWith("AIza") -> "Gemini"
+                                key.startsWith("sk-ant") -> "Anthropic"
+                                key.startsWith("sk-") -> "OpenAI"
+                                else -> if (providerType == "custom") "Custom" else "Unknown Provider"
+                            }
                             Text(
-                                text = "Key ${index + 1}",
+                                text = "$providerName Key ${index + 1}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -190,15 +200,29 @@ fun KeysScreen() {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        IconButton(onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            keyManager.removeKey(key); keys = keyManager.getKeys()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete Key",
-                                tint = MaterialTheme.colorScheme.error
-                            )
+                        Row {
+                            IconButton(onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                navController?.navigate("api_usage/$index")
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.DataUsage,
+                                    contentDescription = "Usage Analytics",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            IconButton(onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                keyManager.removeKey(key)
+                                usageManager.deleteStats(key)
+                                keys = keyManager.getKeys()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Key",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
                     }
                 }

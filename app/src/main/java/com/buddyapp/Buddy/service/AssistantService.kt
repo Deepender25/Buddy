@@ -29,6 +29,7 @@ import com.buddyapp.Buddy.api.PythonBridge
 import com.buddyapp.Buddy.manager.CommandManager
 import com.buddyapp.Buddy.manager.HistoryManager
 import com.buddyapp.Buddy.manager.KeyManager
+import com.buddyapp.Buddy.manager.UsageManager
 import com.buddyapp.Buddy.model.Command
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +48,7 @@ import kotlinx.coroutines.withTimeout
 class AssistantService : AccessibilityService() {
 
     private lateinit var keyManager: KeyManager
+    private lateinit var usageManager: UsageManager
     private lateinit var commandManager: CommandManager
     private lateinit var historyManager: HistoryManager
     private val serviceJob = SupervisorJob()
@@ -80,6 +82,7 @@ class AssistantService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         keyManager = KeyManager(applicationContext)
+        usageManager = UsageManager(applicationContext)
         commandManager = CommandManager(applicationContext)
         historyManager = HistoryManager(applicationContext)
         updateTriggers()
@@ -174,6 +177,8 @@ class AssistantService : AccessibilityService() {
                         } else {
                             PythonBridge.geminiGenerate(command.prompt, text, key, model, DEFAULT_TEMPERATURE)
                         }
+
+                        usageManager.recordRequest(key, result.isSuccess)
 
                         if (result.isSuccess) {
                             spinnerJob?.cancel(); spinnerJob = null
