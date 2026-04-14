@@ -143,7 +143,7 @@ sequenceDiagram
 - **Groq API Support:** Complete integration for Groq as a first-class AI provider, bringing lightning-fast inferences. Supported models include:
   - `llama-3.3-70b-versatile`
   - `meta-llama/llama-4-scout-17b-16e-instruct`
-  - `qwen/qwen3-32b`
+  - `llama-3.1-8b-instant`
   - `openai/gpt-oss-20b`
   - `openai/gpt-oss-120b`
 - **Redesigned Settings & Keys UI:** Completely revamped the Settings and Keys page to be more user-friendly, intuitive, and easier to navigate for seamless API key management.
@@ -413,8 +413,7 @@ Get your free API key at [Google AI Studio →](https://aistudio.google.com/app/
 Native Groq integration for lightning-fast speeds. Supported models:
 - `llama-3.3-70b-versatile`
 - `meta-llama/llama-4-scout-17b-16e-instruct`
-- `qwen/qwen3-32b`
-- `moonshotai/kimi-k2-instruct-0905`
+- `llama-3.1-8b-instant`
 - `openai/gpt-oss-20b`
 - `openai/gpt-oss-120b`
 
