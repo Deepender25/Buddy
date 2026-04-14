@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 /**
  * PythonBridge
  *
- * Thin Kotlin wrapper around the Python AI modules (gemini_client.py / openai_client.py).
+ * Thin Kotlin wrapper around the Python AI modules (gemini_client.py / openai_client.py / groq_client.py).
  * All calls go through Chaquopy — Python runs embedded inside the APK.
  * No server, no Termux, no external process needed.
  */
@@ -97,6 +97,55 @@ object PythonBridge {
             val py = Python.getInstance()
             val module = py.getModule("openai_client")
             val result = module.callAttr("generate", prompt, text, apiKey, model, temperature, endpoint)
+            val map = result.asMap()
+            val success = map[py.builtins.callAttr("str", "success")]?.toBoolean() ?: false
+            if (success) {
+                val resultText = map[py.builtins.callAttr("str", "result")]?.toString() ?: ""
+                Result.success(resultText)
+            } else {
+                val error = map[py.builtins.callAttr("str", "error")]?.toString() ?: "Unknown error"
+                Result.failure(Exception(error))
+            }
+        } catch (e: PyException) {
+            Result.failure(Exception("Python error: ${e.message}"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // ── Groq ────────────────────────────────────────────────────────────────
+
+    suspend fun groqValidateKey(apiKey: String): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val py = Python.getInstance()
+            val module = py.getModule("groq_client")
+            val result = module.callAttr("validate_key", apiKey)
+            val map = result.asMap()
+            val success = map[py.builtins.callAttr("str", "success")]?.toBoolean() ?: false
+            if (success) {
+                Result.success("Valid")
+            } else {
+                val error = map[py.builtins.callAttr("str", "error")]?.toString() ?: "Validation failed"
+                Result.failure(Exception(error))
+            }
+        } catch (e: PyException) {
+            Result.failure(Exception("Python error: ${e.message}"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun groqGenerate(
+        prompt: String,
+        text: String,
+        apiKey: String,
+        model: String,
+        temperature: Double
+    ): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val py = Python.getInstance()
+            val module = py.getModule("groq_client")
+            val result = module.callAttr("generate", prompt, text, apiKey, model, temperature)
             val map = result.asMap()
             val success = map[py.builtins.callAttr("str", "success")]?.toBoolean() ?: false
             if (success) {

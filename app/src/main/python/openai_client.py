@@ -7,6 +7,13 @@ import urllib.request
 import urllib.error
 import json
 
+def get_user_agent() -> str:
+    try:
+        from com.buddyapp.Buddy import BuildConfig
+        return f"BuddyApp/{BuildConfig.VERSION_NAME}"
+    except Exception:
+        return "BuddyApp/1.0"
+
 
 def validate_key(api_key: str, endpoint: str) -> dict:
     """
@@ -17,6 +24,7 @@ def validate_key(api_key: str, endpoint: str) -> dict:
     url = f"{base_url}/models"
     req = urllib.request.Request(url, method="GET")
     req.add_header("Authorization", f"Bearer {api_key}")
+    req.add_header("User-Agent", get_user_agent())
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             resp.read()
@@ -68,6 +76,7 @@ def generate(prompt: str, text: str, api_key: str, model: str, temperature: floa
     req = urllib.request.Request(url, data=data, method="POST")
     req.add_header("Content-Type", "application/json")
     req.add_header("Authorization", f"Bearer {api_key}")
+    req.add_header("User-Agent", get_user_agent())
 
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:

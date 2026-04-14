@@ -20,7 +20,7 @@ A native Android Accessibility Service that injects AI directly into *any* text 
 
 <br/>
 
-[![Latest Release](https://img.shields.io/badge/Release-v1.2-blueviolet?style=flat-square)](#download)
+[![Latest Release](https://img.shields.io/badge/Release-v1.3-blueviolet?style=flat-square)](#download)
 [![APK Size](https://img.shields.io/badge/APK_Size-~20.4_MB-informational?style=flat-square)](#apk-info)
 [![Min SDK](https://img.shields.io/badge/Min_SDK-API_23-orange?style=flat-square)](#tech-stack)
 [![Target SDK](https://img.shields.io/badge/Target_SDK-API_35-brightgreen?style=flat-square)](#tech-stack)
@@ -61,7 +61,7 @@ A native Android Accessibility Service that injects AI directly into *any* text 
 
 Buddy is a **zero-UI, zero-friction AI text companion** for Android. It lives quietly in the background as an Accessibility Service and springs to action exactly when you need it — without ever leaving your current app.
 
-Finished typing a WhatsApp message but want it to sound more professional? Type `/formal` at the end. Wrote a rough email draft? Append `/improve`. Need a quick reply to that message? Type `/reply`. Buddy intercepts the text, sends it to your configured AI (Gemini, OpenAI, or any OpenAI-compatible endpoint), and **replaces it inline** — in under 2 seconds.
+Finished typing a WhatsApp message but want it to sound more professional? Type `/formal` at the end. Wrote a rough email draft? Append `/improve`. Need a quick reply to that message? Type `/reply`. Buddy intercepts the text, sends it to your configured AI (Gemini, Groq, OpenAI, or any OpenAI-compatible endpoint), and **replaces it inline** — in under 2 seconds.
 
 No copy-paste. No app-switching. No ChatGPT tab. Just type and trigger.
 
@@ -84,8 +84,10 @@ flowchart TD
     E --> F[Show inline spinner\n✦ ✧ ✦ ✧ in the text field]
     F --> G{Provider\nconfigured?}
     G -- Gemini --> H[Python: gemini_client.py\nvia Chaquopy]
+    G -- Groq --> H2[Python: groq_client.py\nvia Chaquopy]
     G -- Custom / OpenAI-compatible --> I[Python: openai_client.py\nvia Chaquopy]
     H --> J{API call\nsuccessful?}
+    H2 --> J
     I --> J
     J -- Success --> K[Inject AI response\nback into the text field]
     J -- Rate limited --> L[Try next key\nRound-robin rotation]
@@ -117,7 +119,7 @@ sequenceDiagram
     S->>S: Detects /fix trigger
     S->>A: Inline spinner ✦ ✧ ✦ ✧
     S->>P: PythonBridge.geminiGenerate(prompt, text, key, model)
-    P->>AI: HTTP POST to Gemini / OpenAI endpoint
+    P->>AI: HTTP POST to Gemini / Groq / OpenAI endpoint
     AI-->>P: { "text": "Please fix this." }
     P-->>S: Result.success("Please fix this.")
     S->>A: ACTION_SET_TEXT → "Please fix this."
@@ -131,15 +133,24 @@ sequenceDiagram
 
 | Property | Value |
 |:---|:---|
-| **Version** | v1.2 |
+| **Version** | v1.3 |
 | **APK Size** | ~20.4 MB (20,883 KB) |
 | **Architecture** | arm64-v8a |
 | **Min Android** | Android 6.0 (API 23) |
 | **Target Android** | Android 15 (API 35) |
 
-### ✨ What's New in v1.2
+### ✨ What's New in v1.3
+- **Groq API Support:** Complete integration for Groq as a first-class AI provider, bringing lightning-fast inferences. Supported models include:
+  - `llama-3.3-70b-versatile`
+  - `meta-llama/llama-4-scout-17b-16e-instruct`
+  - `qwen/qwen3-32b`
+  - `openai/gpt-oss-20b`
+  - `openai/gpt-oss-120b`
+- **Redesigned Settings & Keys UI:** Completely revamped the Settings and Keys page to be more user-friendly, intuitive, and easier to navigate for seamless API key management.
+
+### ✨ Prior Release (v1.2)
 - **Premium API Analytics:** Keep track of the stability and success rate of your AI queries. Select any of your keys to launch a highly detailed dashboard tracking total requests, error rates, and active usage statistics globally.
-- **Intelligent Key Identity:** Keys are no longer ambiguously numbered. When you add a new key, the app dynamically identifies the provider signature (Gemini, OpenAI, Anthropic, Custom) and tags it properly!
+- **Intelligent Key Identity:** Keys are no longer ambiguously numbered. When you add a new key, the app dynamically identifies the provider signature (Gemini, OpenAI, Anthropic, Custom, Groq) and tags it properly!
 - **Sleeker Commands Experience:** Handcrafted a new floating `ModalBottomSheet` experience triggered by a FAB for adding/editing Custom Commands so the screen is never cluttered by permanent text fields. Command cards also received high-quality custom color badges (`Built-in`, `Text Replacer`, `AI`) that flawlessly match the premium dark theme!
 
 ### ✨ Prior Release (v1.1)
@@ -385,7 +396,7 @@ Here are creative trigger ideas to inspire your custom command collection:
 
 ## 🤖 AI Providers
 
-Buddy supports two provider modes:
+Buddy supports multiple provider modes:
 
 ### Google Gemini (Default)
 
@@ -397,12 +408,24 @@ Buddy supports two provider modes:
 
 Get your free API key at [Google AI Studio →](https://aistudio.google.com/app/apikey)
 
+### Groq
+
+Native Groq integration for lightning-fast speeds. Supported models:
+- `llama-3.3-70b-versatile`
+- `meta-llama/llama-4-scout-17b-16e-instruct`
+- `qwen/qwen3-32b`
+- `moonshotai/kimi-k2-instruct-0905`
+- `openai/gpt-oss-20b`
+- `openai/gpt-oss-120b`
+
+Get your free API key at [Groq Console →](https://console.groq.com/keys)
+
 ### Custom / OpenAI-Compatible
 
 Buddy can connect to any OpenAI-compatible endpoint:
 
 - **OpenAI** — `https://api.openai.com/v1` with `gpt-4o-mini`, `gpt-4o`, etc.
-- **Groq** — `https://api.groq.com/openai/v1` with `llama-3.3-70b-versatile`
+<!-- Groq moved to native integration -->
 - **OpenRouter** — `https://openrouter.ai/api/v1` (access 200+ models)
 - **Ollama** (local) — `http://localhost:11434/v1` with `llama3`, `mistral`, etc.
 - **LM Studio** — `http://localhost:1234/v1`
@@ -410,7 +433,7 @@ Buddy can connect to any OpenAI-compatible endpoint:
 
 **Configuration:**
 1. Open **Settings** in Buddy
-2. Select **"Custom / OpenAI-compatible"** as provider
+2. Select your provider (**Gemini**, **Groq**, or **Custom / OpenAI-compatible**)
 3. Enter your **Model name** and **Endpoint URL**
 4. Add the API key in the **Keys** tab
 
@@ -490,6 +513,7 @@ Buddy/
 ├── app/src/main/
 │   ├── python/
 │   │   ├── gemini_client.py        ← Python: Gemini API calls
+│   │   ├── groq_client.py          ← Python: Groq API calls
 │   │   └── openai_client.py        ← Python: OpenAI-compatible API calls
 │   └── java/com/buddyapp/Buddy/
 │       ├── BuddyApp.kt             ← Application class, Python init

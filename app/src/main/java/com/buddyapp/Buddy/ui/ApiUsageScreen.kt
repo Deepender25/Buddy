@@ -51,9 +51,10 @@ fun ApiUsageScreen(navController: NavController, keyIndex: Int) {
     val providerType = prefs.getString("provider_type", "gemini") ?: "gemini"
 
     val providerName = when {
-        key.startsWith("AIza") -> "Gemini"
+        key.startsWith("AIza")   -> "Gemini"
+        key.startsWith("gsk_")   -> "Groq"
         key.startsWith("sk-ant") -> "Anthropic"
-        key.startsWith("sk-") -> "OpenAI"
+        key.startsWith("sk-")    -> "OpenAI"
         else -> if (providerType == "custom") "Custom" else "Unknown Provider"
     }
     

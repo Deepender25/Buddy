@@ -5,7 +5,7 @@ plugins {
     id("com.chaquo.python")
 }
 
-val baseVersion = "1.2"
+val baseVersion = "1.3"
 
 android {
     namespace = "com.buddyapp.Buddy"
@@ -16,7 +16,7 @@ android {
         applicationId = "com.buddyapp.Buddy"
         minSdk = 23
         targetSdk = 35
-        versionCode = 3
+        versionCode = 4
         versionName = "$baseVersion"
 
         vectorDrawables { useSupportLibrary = true }
@@ -44,7 +44,10 @@ android {
         jvmTarget = "17"
     }
 
-    buildFeatures { compose = true }
+    buildFeatures { 
+        compose = true 
+        buildConfig = true
+    }
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"

@@ -150,6 +150,9 @@ class AssistantService : AccessibilityService() {
                 isProcessing = false
                 return
             }
+        } else if (providerType == "groq") {
+            model = prefs.getString("groq_model", "llama-3.3-70b-versatile") ?: "llama-3.3-70b-versatile"
+            endpoint = ""
         } else {
             model = prefs.getString("model", "gemini-3.1-flash-lite-preview") ?: "gemini-3.1-flash-lite-preview"
             endpoint = ""
@@ -172,10 +175,10 @@ class AssistantService : AccessibilityService() {
                         }
 
                         // ── Python does the AI call ──────────────────────────
-                        val result = if (providerType == "custom") {
-                            PythonBridge.openaiGenerate(command.prompt, text, key, model, DEFAULT_TEMPERATURE, endpoint)
-                        } else {
-                            PythonBridge.geminiGenerate(command.prompt, text, key, model, DEFAULT_TEMPERATURE)
+                        val result = when (providerType) {
+                            "custom" -> PythonBridge.openaiGenerate(command.prompt, text, key, model, DEFAULT_TEMPERATURE, endpoint)
+                            "groq"   -> PythonBridge.groqGenerate(command.prompt, text, key, model, DEFAULT_TEMPERATURE)
+                            else     -> PythonBridge.geminiGenerate(command.prompt, text, key, model, DEFAULT_TEMPERATURE)
                         }
 
                         usageManager.recordRequest(key, result.isSuccess)
