@@ -1,6 +1,8 @@
 package com.buddyapp.Buddy.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -162,14 +166,17 @@ fun CommandsScreen() {
                     .padding(horizontal = 24.dp)
                     .padding(bottom = 32.dp)
             ) {
-                Text(
-                    text = if (editingCommandTrigger != null) "Edit Command" else "New Command",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (editingCommandTrigger != null) "Edit Command" else "New Command",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 22.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
                 // Type selector
                 Text(
@@ -209,13 +216,16 @@ fun CommandsScreen() {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     isError = errorMessage != null,
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     )
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = prompt,
@@ -228,10 +238,13 @@ fun CommandsScreen() {
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(110.dp),
+                        .height(130.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     )
                 )
 
@@ -253,7 +266,8 @@ fun CommandsScreen() {
                     if (editingCommandTrigger != null) {
                         OutlinedButton(
                             onClick = { closeSheet() },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Text("Cancel")
                         }
@@ -284,7 +298,8 @@ fun CommandsScreen() {
                             }
                         },
                         enabled = trigger.isNotBlank() && prompt.isNotBlank(),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(if (editingCommandTrigger != null) "Save Changes" else "Add Command")
                     }
@@ -303,82 +318,128 @@ private fun CommandCard(
     onDelete: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
+    var isExpanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-    SlateCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                // Trigger pill
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    text = "Delete Command?",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete '${cmd.trigger}'? This action cannot be undone.",
+                    fontSize = 15.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    SlateCard(
+        modifier = Modifier.clickable { isExpanded = !isExpanded },
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Trigger view
                 Text(
                     text = cmd.trigger,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.primary
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                // Prompt preview
-                Text(
-                    text = cmd.prompt,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 18.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Badge row
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    when {
-                        cmd.isBuiltIn -> TypeBadge(
-                            label = "Built-in",
-                            // Subtle white-tinted surface — fits the monochrome dark theme
-                            containerColor = Color(0xFF2C2C2E),
-                            contentColor = Color(0xFFAEAEB2)
+
+                // Action buttons
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { isExpanded = !isExpanded }) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = if (isExpanded) "Collapse" else "Expand",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        cmd.isTextReplacer -> TypeBadge(
-                            label = "Text Replacer",
-                            // A slightly warmer dark surface with muted white text
-                            containerColor = Color(0xFF1C1C1E),
-                            contentColor = Color(0xFFFFFFFF)
-                        )
-                        else -> TypeBadge(
-                            label = "AI",
-                            // Slightly brighter chip using primary (white) border-style
-                            containerColor = Color(0xFF1A1A1A),
-                            contentColor = Color(0xFFFFFFFF)
-                        )
+                    }
+                    if (!(cmd.isBuiltIn && cmd.trigger.endsWith("undo"))) {
+                        IconButton(onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onEdit()
+                        }) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    if (!cmd.isBuiltIn) {
+                        IconButton(onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            showDeleteDialog = true
+                        }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
-
-            // Action buttons
-            Row {
-                if (!(cmd.isBuiltIn && cmd.trigger.endsWith("undo"))) {
-                    IconButton(onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onEdit()
-                    }) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-                if (!cmd.isBuiltIn) {
-                    IconButton(onClick = {
-                        onDelete()
-                    }) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(20.dp)
-                        )
+            
+            AnimatedVisibility(visible = isExpanded) {
+                Column(modifier = Modifier.padding(top = 2.dp).fillMaxWidth()) {
+                    Text(
+                        text = cmd.prompt,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        when {
+                            cmd.isBuiltIn -> TypeBadge(
+                                label = "Built-in",
+                                containerColor = Color(0xFF2C2C2E),
+                                contentColor = Color(0xFFAEAEB2)
+                            )
+                            cmd.isTextReplacer -> TypeBadge(
+                                label = "Text Replacer",
+                                containerColor = Color(0xFF1C1C1E),
+                                contentColor = Color(0xFFFFFFFF)
+                            )
+                            else -> TypeBadge(
+                                label = "AI",
+                                containerColor = Color(0xFF1A1A1A),
+                                contentColor = Color(0xFFFFFFFF)
+                            )
+                        }
                     }
                 }
             }

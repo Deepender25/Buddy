@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun SlateCard(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
     Surface(
@@ -22,7 +23,7 @@ fun SlateCard(
         shadowElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(contentPadding),
             content = content
         )
     }
